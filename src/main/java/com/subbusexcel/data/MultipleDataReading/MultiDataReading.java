@@ -1,4 +1,4 @@
-package datareading;
+package com.subbusexcel.data.MultipleDataReading;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -46,18 +45,17 @@ public class MultiDataReading {
 	 * contains key value pairs of column name and actual value.
 	 */
 	public Map<Integer, Map<String, String>> getData(String path, String sheetName, String key) {
-
+		//Map to hold data row number (Starting from 1) and data
 		Map<Integer, Map<String, String>> mp = new HashMap<Integer, Map<String, String>>();
 		List<String> fieldnames = new ArrayList<String>();
 
+		//Get access to the workbook
 		FileInputStream fis = null;
-
 		try {
-			//Get access to the workbook
 			fis = new FileInputStream(path);
 		}
 		catch(IOException e){
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 
 		//Create workbook object
@@ -90,44 +88,58 @@ public class MultiDataReading {
 			Iterator<Cell> cells = row.iterator();
 			while(cells.hasNext()) {
 				Cell cell = cells.next();
-				if(cell.getCellType()==CellType.STRING)
-				{
-					if(initialkeywordcheck && cell.getStringCellValue().equalsIgnoreCase(key)) {
-						beginningrowexists = true;
+				DataFormatter df = new DataFormatter();
+				String cellvalue = df.formatCellValue(cell);
 
-						fieldsrow = row.getRowNum();
-						databeginningrow = fieldsrow+1;
-						databeginningcell = cell.getColumnIndex()+1;
+				//Find the starting position of key, column names row and starting position of data row and cell
+				if(initialkeywordcheck && cellvalue.equalsIgnoreCase(key)) {
+					beginningrowexists = true;
 
-						initialkeywordcheck = false;
+					fieldsrow = row.getRowNum();
+					databeginningrow = fieldsrow+1;
+					databeginningcell = cell.getColumnIndex()+1;
 
-						continue;
-					}
-					if(!initialkeywordcheck && cell.getStringCellValue().equalsIgnoreCase(key)) {
-						endingrowexists = true;
+					initialkeywordcheck = false;
 
-						dataendingrow = row.getRowNum();
-						dataendingcell = cell.getColumnIndex()-1;
-
-						break;
-					}
+					continue;
 				}
+				
+				//Find the ending position of key, data ending row and data ending cell
+				if(!initialkeywordcheck && cellvalue.equalsIgnoreCase(key)) {
+					endingrowexists = true;
+
+					dataendingrow = row.getRowNum();
+					dataendingcell = cell.getColumnIndex()-1;
+
+					break;
+				}
+
 			}
 		}
 
 		if(!beginningrowexists || !endingrowexists) {
-			System.out.println("Problem with Keys. Check the keys.");
+			//System.out.println("Problem with Keys. Check the keys.");
 			try {
-				workbook.close();
-			} catch (IOException e) {
+				throw new InvalidKeysException("Problem with Keys. Check the keys.");
+			} catch (InvalidKeysException e) {
+				try {
+					workbook.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}
 		if(fieldsrow == dataendingrow) {
-			System.out.println("Keys should not be on the same row");
+			//System.out.println("Keys should not be on the same row");
 			try {
-				workbook.close();
-			} catch (IOException e) {
+				throw new InvalidKeysException("Keys should not be on the same row");
+			} catch (InvalidKeysException e) {
+				try {
+					workbook.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}
@@ -138,7 +150,9 @@ public class MultiDataReading {
 		columnnames.next();
 		while(columnnames.hasNext()) {
 			Cell cell = columnnames.next();
-			fieldnames.add(cell.getStringCellValue());
+			DataFormatter df = new DataFormatter();
+			String cellvalue = df.formatCellValue(cell);
+			fieldnames.add(cellvalue);
 		}
 
 		//Adding column headings and data to map
@@ -218,9 +232,7 @@ public class MultiDataReading {
 		int databeginningrow = 1;
 		int databeginningcell = 0;
 		int dataendingrow = sheet.getLastRowNum();
-		System.out.println("dataendingrow"+dataendingrow);
 		int dataendingcell = fieldrows.getLastCellNum()-1;
-		System.out.println("lastcellnum"+dataendingcell);
 
 		//Adding column headings and data to map
 		int datarowcount = 1;
@@ -239,8 +251,6 @@ public class MultiDataReading {
 			datarowcount += 1;
 		}
 
-		System.out.println(mp);
-		System.out.println(mp.size());
 		try {
 			workbook.close();
 		} catch (IOException e) {
@@ -302,30 +312,28 @@ public class MultiDataReading {
 			Iterator<Cell> cells = row.iterator();
 			while(cells.hasNext()) {
 				Cell cell = cells.next();
-				if(cell.getCellType()==CellType.STRING)
-				{
-					if(cell.getStringCellValue().equalsIgnoreCase(key)) {
+				DataFormatter df = new DataFormatter();
+				String cellvalue = df.formatCellValue(cell);
 
-						fieldsrow = row.getRowNum();
-						actualrow = fieldsrow + rowno;
-						rowfound = true;
-					}
-				}
-				if(cell.getCellType()==CellType.STRING)
-				{
-					if(cell.getStringCellValue().equalsIgnoreCase(colName)) {
+				if(cellvalue.equalsIgnoreCase(key)) {
 
-						actualcol = cell.getColumnIndex();
-						colfound = true;
-					}
+					fieldsrow = row.getRowNum();
+					actualrow = fieldsrow + rowno;
+					rowfound = true;
 				}
+
+
+				if(cellvalue.equalsIgnoreCase(colName)) {
+
+					actualcol = cell.getColumnIndex();
+					colfound = true;
+				}
+
 				if(rowfound && colfound) {
 					break;
 				}
 			}
 		}
-		//		System.out.println("actrow "+actualrow);
-		//		System.out.println("actcol "+actualcol);
 
 		try {
 			fis.close();
@@ -416,13 +424,14 @@ public class MultiDataReading {
 		Iterator<Cell> cells = row.iterator();
 		while(cells.hasNext()) {
 			Cell cell = cells.next();
-			if(cell.getCellType()==CellType.STRING)
-			{
-				if(cell.getStringCellValue().equalsIgnoreCase(colName)) {
-					actualcol = cell.getColumnIndex();
-					colfound = true;
-				}
+			DataFormatter df = new DataFormatter();
+			String cellvalue = df.formatCellValue(cell);
+
+			if(cellvalue.equalsIgnoreCase(colName)) {
+				actualcol = cell.getColumnIndex();
+				colfound = true;
 			}
+
 			if(colfound) {
 				break;
 			}

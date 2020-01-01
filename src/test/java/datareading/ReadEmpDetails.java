@@ -2,12 +2,14 @@ package datareading;
 
 import java.util.Map;
 
+import com.subbusexcel.data.MultipleDataReading.MultiDataReading;
+
 public class ReadEmpDetails {
 
 	public static void main(String[] args) {
 
-		//GetDataFromExcelWithKey();
-		GetDataFromExcelWithoutKey();
+		GetDataFromExcelWithKey();
+		//GetDataFromExcelWithoutKey();
 
 	}
 	public static void GetDataFromExcelWithKey() {
@@ -17,16 +19,16 @@ public class ReadEmpDetails {
 		MultiDataReading mdr = new MultiDataReading();
 		Map<Integer, Map<String, String>> data = mdr.getData(path, sheetName, key);
 
-		System.out.println(data);
+//		System.out.println(data);
 
 		for(int i=1; i<=data.size(); i++) {
-			//System.out.println(data.get(i));
-			System.out.println(data.get(i).get("id"));
-			System.out.println(data.get(i).get("firstname"));
-			System.out.println(data.get(i).get("lastname"));
-			System.out.println(data.get(i).get("company"));
-			System.out.println(data.get(i).get("role"));
-			System.out.println(data.get(i).get("salary"));
+//			System.out.println(data.get(i));
+//			System.out.println(data.get(i).get("id"));
+//			System.out.println(data.get(i).get("firstname"));
+//			System.out.println(data.get(i).get("lastname"));
+//			System.out.println(data.get(i).get("company"));
+//			System.out.println(data.get(i).get("role"));
+//			System.out.println(data.get(i).get("salary"));
 
 			boolean success = mdr.setData(path, sheetName, key, i, "company", "12345");
 			if(success) {
@@ -40,16 +42,16 @@ public class ReadEmpDetails {
 		MultiDataReading mdr = new MultiDataReading();
 		Map<Integer, Map<String, String>> data = mdr.getData(path, sheetName);
 
-		System.out.println(data);
+//		System.out.println(data);
 
 		for(int i=1; i<=data.size(); i++) {
-			//System.out.println(data.get(i));
-			System.out.println(data.get(i).get("id"));
-			System.out.println(data.get(i).get("firstname"));
-			System.out.println(data.get(i).get("lastname"));
-			System.out.println(data.get(i).get("company"));
-			System.out.println(data.get(i).get("role"));
-			System.out.println(data.get(i).get("salary"));
+//			System.out.println(data.get(i));
+//			System.out.println(data.get(i).get("id"));
+//			System.out.println(data.get(i).get("firstname"));
+//			System.out.println(data.get(i).get("lastname"));
+//			System.out.println(data.get(i).get("company"));
+//			System.out.println(data.get(i).get("role"));
+//			System.out.println(data.get(i).get("salary"));
 			
 			boolean success = mdr.setData(path, sheetName, i, "password", "test123");
 			if(success) {
